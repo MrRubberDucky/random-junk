@@ -44,6 +44,7 @@ function checkLink() {
     die();
   } else if (array_key_exists('privateServerLinkCode', $urlQuery) == false && array_key_exists(4, $urlGame) == true {
     header("Location: roblox://placeID=".$urlGame[4]);
+    die();
   } else {
     echo "<center><h1>This url is not supported</h1></center>";
   }
