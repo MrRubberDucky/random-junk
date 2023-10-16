@@ -1,52 +1,130 @@
-<!-- Quickly join private servers for Roblox UWP -->
 <?php
-  # Just something that was made in order to learn a bit of PHP, might learn it fully eventually
-  header('Cache-Control: no-cache');
-  header('Pragma: no-cache')
+	/* 
+	Debugging Headers
+	Please do not enable these if you don't need them,
+	as they won't provide you with any info unless you're actively
+	modifying this code
+	
+	error_reporting(E_ALL);
+	ini_set('display_errors', '1');
+	*/
 ?>
 
-<?php if (isset($_REQUEST['exec'])) {
-  checkLink();
-  }
+<?php
+	if (isset($_REQUEST['exec'])) {
+		checkLink();
+	}
 ?>
 
-<!-- The Form -->
-<html><body>
-<center>
-<label for="game">Input Private Server or Game Link</label>
-<form action=PrivateServerJoiner.php">
-  <input type="text" name="txt" required/>
-  <input type="submit" name="exec"/>
-</form>
-<pre>
-  Instructions:
-  1. Click on the text box
-  2. Paste the link in following format -> https://www.roblox.com/games/[id]?privateServerCode=[id]
-
-  Note: The ?privateServerCode query can be omitted!
-</pre>
+<!-- HTML document start -->
+<!DOCTYPE html>	
+<html>
+<!-- Header -->
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="//cdn.muicss.com/mui-0.10.3/css/mui.min.css" rel="stylesheet" type="text/css" />
+		<script src="//cdn.muicss.com/mui-0.10.3/js/mui.min.js"></script>
+	</head>
+	
+	<body style="background-color:#FFFFFFF">
+	
+		<div class="mui-appbar">
+			<table width="100%">
+				<tr style="vertical-align:middle;">
+					<td class="mui--appbar-height" align="center"><font color="#FFFFFF">UWP In-Game Joiner</font></td>
+				</tr>
+			</table>
+		</div>
+		<!-- Notice for people running this in browser -->
+		<title>Load this in UWP Roblox</title>
+		
+		<div class="mui--z1">
+			<div class="mui-panel">
+			<center>
+			Paste any valid Private Server or Game Link and then press Join!
+			<form class="mui-form--inline" align="center" action="PrivateServerJoiner.php">
+				<div class="mui-textfield">
+					<input type="text" name="txt" placeholder="roblox.com/games/1" align="center" required/>
+				</div>
+					<button class="mui-btn mui-btn--primary" type="submit" align="center" name="exec">Join</button>
+			</form>
+			</center>
+			</div>
+		</div>
+	</body>
+</html>
 
 <?php
 function checkLink() {
-  $checkURL = $_REQUEST['txt'];
-  # Clear queries for /game/[id]
-  $urlSplit = parse_url($checkURL);
-  $urlRemQuery = strtok($checkUrl, "?");
-  # Grab Private Server Link Code from ?privateServerCode=
-  parse_str($urlSplit['query'], $urlQuery);
+	class NotACodeLink extends Exception {};
+	$checkURL = $_REQUEST['txt'];
 
-  /* For debugging purposes
-  print_r($urlQuery);
-  echo $urlGame[4]; */
+	# Try-Catch statement just in case it fails it will recover from it.
+	try {
+		# Parse URL so we can extract data from it
+		$urlNewCheck = parse_url($checkURL);
+		debug_to_console("[Info] Checking if URL is a new PS link");
+		parse_str($urlNewCheck['query'], $urlNewQuery);
+		
+		if(array_key_exists('code', $urlNewQuery) == true) {
+			
+			# This is ugly but I don't care tbf, for partial link support
+			if (array_key_exists('host', $urlNewCheck) == false) {
+				$urlNewCheck['scheme'] = 'https';
+				$urlNewCheck['host'] = "www.roblox.com";
+				$urlNewCheck['path'] = "/share-links";
+			}
+			$urlRetargeting = $urlNewCheck['scheme']."://". $urlNewCheck['host'].$urlNewCheck['path']."?code=".$urlNewQuery['code']."&type=".$urlNewQuery['type'];
+			
+			redirect($urlRetargeting);
+		}
+	}
+	catch (NotACodeLink $ex) {
+		debug_to_console("[Warning] URL provided is not a new PS link");
+	}
+	
+	/*
+	This continues in case the private server link is the old variant, it's a game link or it's invalid
+	By old, this implies the link is roblox.com/game/id?query or roblox.com/game/id
+	*/
+	debug_to_console("[Info] Checking if URL is either a Game or PS link");
+	$urlCheckOld = parse_url($checkURL);
 
-  if(array_key_exists('privateServerLinkCode', $urlQuery) == true && array_key_exists(4, $urlGame) == true) {
-    header("Location: roblox://placeID=".$urlGame[4]."&linkCode=".$urlQuery['privateServerLinkCode']);
-    die();
-  } else if (array_key_exists('privateServerLinkCode', $urlQuery) == false && array_key_exists(4, $urlGame) == true {
-    header("Location: roblox://placeID=".$urlGame[4]);
-    die();
-  } else {
-    echo "<center><h1>This url is not supported</h1></center>";
-  }
+	# Extract Place ID from URL
+	
+	$urlPlaceID = explode('/', $urlCheckOld['path']);
+	
+	if(array_key_exists('privateServerLinkCode', $urlCheckOld) == true && array_key_exists(2, $urlPlaceID) == true) {
+			header("Location: roblox://placeID=".$urlPlaceID[2]."&linkCode=".$urlCheckOld['privateServerLinkCode']);
+			die();
+	} else if (array_key_exists('privateServerLinkCode', $urlCheckOld) == false && array_key_exists(2, $urlPlaceID) == true) {
+			header("Location: roblox://placeID=".$urlPlaceID[2]);
+			die();
+	} else {
+		debug_to_console("[Critical] Unsupported URL or Invalid Parameter(s)!");
+		echo "<div class='mui--bg-danger' style='height:20px;' align='center' text-align='center'><font color='#FFFFF0'>An error has occured, check developer console for more details.</font></div>";
+	}
+}
+?>
+
+<?php
+function redirect($urlRetargeting) {
+	# I'm too lazy to learn how to build a full url with query so ye lol
+	
+	header('Location: '.$urlRetargeting);
+	die();
+}
+?>
+
+<?php
+# Thanks stackoverflow for making my life easier with this one
+function debug_to_console($data) {
+    $output = $data;
+    if (is_array($output))
+        $output = implode(',', $output);
+
+    echo "<script>console.log('Join Worker: " . $output . "' );</script>";
 }
 ?>
