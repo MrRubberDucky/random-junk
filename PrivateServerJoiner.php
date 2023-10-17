@@ -1,3 +1,19 @@
+<!--
+This is for use with a MITM Proxy capable of redirecting/rewriting a request to either a locally running server or to another place
+You can use this just to be able to join Private Servers easier on UWP (mostly MS Store UWP) but it can also work on devices that can't do it yet.
+The way share links work is that they will check for protocol & user-agent, if they see it works then you will be prompted to open it in the app.
+If not, it will redirect you to either:
+- Web Client
+- Google Play Store
+- Apple Store (apparently iOS check altogether doesn't work, it redirects either way to Apple Store?)
+...for the rest, not sure. But there's that. We are essentially using that to our advantage and just redirecting in-game browser to it afterwards, thus site itself will prompt us with valid protocol,
+which means it's just a matter of clicking "Yes" and we are in.
+
+The only reason why a MITM proxy is required for this is for it to be displayed in app. Otherwise you can execute this from a web page and it will work.
+
+Uses MUI Framework for Material Design-like styling. Code was created more as a way to learn some aspects of PHP and experiment with my googling skills so major thanks to countless stackoverflow threads and
+reddit posts for being super helpful in this journey!
+-->
 <?php
 	/* 
 	Debugging Headers
@@ -55,6 +71,7 @@
 		</div>
 	</body>
 </html>
+<!-- HTML document end -->
 
 <?php
 function checkLink() {
@@ -70,7 +87,7 @@ function checkLink() {
 		
 		if(array_key_exists('code', $urlNewQuery) == true) {
 			
-			# This is ugly but I don't care tbf, for partial link support
+			# This is ugly but I don't care tbf
 			if (array_key_exists('host', $urlNewCheck) == false) {
 				$urlNewCheck['scheme'] = 'https';
 				$urlNewCheck['host'] = "www.roblox.com";
@@ -119,7 +136,6 @@ function redirect($urlRetargeting) {
 ?>
 
 <?php
-# Thanks stackoverflow for making my life easier with this one
 function debug_to_console($data) {
     $output = $data;
     if (is_array($output))
