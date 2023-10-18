@@ -20,10 +20,10 @@ reddit posts for being super helpful in this journey!
 	Please do not enable these if you don't need them,
 	as they won't provide you with any info unless you're actively
 	modifying this code
-	*/
 	
 	error_reporting(E_ALL);
 	ini_set('display_errors', '1');
+ 	*/
 	
 ?>
 
