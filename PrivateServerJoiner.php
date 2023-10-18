@@ -20,10 +20,11 @@ reddit posts for being super helpful in this journey!
 	Please do not enable these if you don't need them,
 	as they won't provide you with any info unless you're actively
 	modifying this code
+	*/
 	
 	error_reporting(E_ALL);
 	ini_set('display_errors', '1');
-	*/
+	
 ?>
 
 <?php
@@ -77,6 +78,7 @@ reddit posts for being super helpful in this journey!
 function checkLink() {
 	class NotACodeLink extends Exception {};
 	$checkURL = $_REQUEST['txt'];
+	print_r($checkURL);
 
 	# Try-Catch statement just in case it fails it will recover from it.
 	try {
@@ -84,6 +86,7 @@ function checkLink() {
 		$urlNewCheck = parse_url($checkURL);
 		debug_to_console("[Info] Checking if URL is a new PS link");
 		parse_str($urlNewCheck['query'], $urlNewQuery);
+		print_r($urlNewQuery);
 		
 		if(array_key_exists('code', $urlNewQuery) == true) {
 			
@@ -96,6 +99,8 @@ function checkLink() {
 			$urlRetargeting = $urlNewCheck['scheme']."://". $urlNewCheck['host'].$urlNewCheck['path']."?code=".$urlNewQuery['code']."&type=".$urlNewQuery['type'];
 			
 			redirect($urlRetargeting);
+		} else {
+			debug_to_console("[Info] Guess not.");
 		}
 	}
 	catch (NotACodeLink $ex) {
@@ -108,15 +113,18 @@ function checkLink() {
 	*/
 	debug_to_console("[Info] Checking if URL is either a Game or PS link");
 	$urlCheckOld = parse_url($checkURL);
+	# Break into parts so we can get the Link Code
+	parse_str($urlCheckOld['query'], $urlCheckOQuery);
+	print_r($urlCheckOld);
 
 	# Extract Place ID from URL
 	
 	$urlPlaceID = explode('/', $urlCheckOld['path']);
 	
-	if(array_key_exists('privateServerLinkCode', $urlCheckOld) == true && array_key_exists(2, $urlPlaceID) == true) {
-			header("Location: roblox://placeID=".$urlPlaceID[2]."&linkCode=".$urlCheckOld['privateServerLinkCode']);
+	if(array_key_exists('privateServerLinkCode', $urlCheckOQuery) == true && array_key_exists(2, $urlPlaceID) == true) {
+			header("Location: roblox://placeID=".$urlPlaceID[2]."&linkCode=".$urlCheckOQuery['privateServerLinkCode']);
 			die();
-	} else if (array_key_exists('privateServerLinkCode', $urlCheckOld) == false && array_key_exists(2, $urlPlaceID) == true) {
+	} else if (array_key_exists('privateServerLinkCode', $urlCheckOQuery) == false && array_key_exists(2, $urlPlaceID) == true) {
 			header("Location: roblox://placeID=".$urlPlaceID[2]);
 			die();
 	} else {
